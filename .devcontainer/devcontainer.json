@@ -1,0 +1,23 @@
+{
+    "name": "ns-resource-limiter env",
+    "image" : "mcr.microsoft.com/devcontainers/go",
+    
+    "postCreateCommand": "echo alias k=kubectl >> ~/.bash_aliases",
+
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-kubernetes-tools.vscode-kubernetes-tools",
+                "golang.go"
+            ]
+        }
+    },
+
+    "features": {
+        "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {},
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {
+            "moby": false
+        }
+    }
+
+}
