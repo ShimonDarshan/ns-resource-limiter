@@ -1,0 +1,38 @@
+# Default values for ns-resource-limiter.
+# This is a YAML-formatted file.
+
+replicaCount: 1
+
+image:
+  repository: devopsrepos/ns-resource-limiter
+  tag: stable
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 443
+  targetPort: 8443
+
+admission:
+  enabled: true
+  name: resource-limit-check
+  timeoutSeconds: 5
+
+# Optional runtime overrides
+args: []
+env: []
+
+resources: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+tls:
+  enabled: true
+  name: tls
+  mountPath: /tls
+  readOnly: true
+  secretName: ns-resource-limiter-tls

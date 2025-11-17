@@ -1,0 +1,44 @@
+{{- if .Values.admission.enabled }}
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: {{ .Values.admission.name }}
+webhooks:
+  - name: {{ .Values.admission.name }}.webhook.svc
+    clientConfig:
+      service:
+        name: {{ include "ns-resource-limiter.fullname" . }}
+        namespace: {{ .Release.Namespace }}
+        path: /validate
+    #! for tests environment only in prod use: Fail
+    failurePolicy: Ignore
+    rules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources:
+          - pods
+          - replicationcontrollers
+          - podtemplates
+      - apiGroups: ["apps"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources:
+          - deployments
+          - replicasets
+          - statefulsets
+          - daemonsets
+      - apiGroups: ["batch"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources:
+          - jobs
+      - apiGroups: ["batch"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources:
+          - cronjobs
+    admissionReviewVersions: ["v1"]
+    sideEffects: None
+    timeoutSeconds: {{ .Values.admission.timeoutSeconds }}
+{{- end }}

@@ -1,0 +1,23 @@
+1. Install the chart (webhook is disabled by default):
+
+   helm install ns-resource-limiter ./chart/ns-resource-limiter
+
+2. Verify the pod is running:
+
+   kubectl get pods -l app=ns-resource-limiter
+
+3. IMPORTANT: To enable the ValidatingWebhook:
+   
+   - Ensure your webhook application serves HTTPS on port 8443 with valid TLS certificates
+   - Ensure the TLS secret 'ns-resource-limiter-tls' exists in the target namespace:
+     kubectl get secret ns-resource-limiter-tls
+   - Then enable the webhook:
+     helm upgrade ns-resource-limiter ./chart/ns-resource-limiter --set admission.enabled=true
+
+4. To override image repository/tag:
+
+   helm install ns-resource-limiter ./chart/ns-resource-limiter \
+     --set image.repository=yourrepo/ns-resource-limiter \
+     --set image.tag=v1.0.0
+
+WARNING: Enabling the webhook without proper TLS setup will cause API server errors.

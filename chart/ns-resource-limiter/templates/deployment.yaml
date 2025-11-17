@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ns-resource-limiter.fullname" . }}
+  labels:
+{{ include "ns-resource-limiter.labels" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "ns-resource-limiter.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "ns-resource-limiter.name" . }}
+    spec:
+      containers:
+      - name: {{ include "ns-resource-limiter.name" . }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.service.targetPort }}
+        {{- if .Values.args }}
+        args:
+        {{- range .Values.args }}
+        - {{ . | quote }}
+        {{- end }}
+        {{- end }}
+        {{- if .Values.env }}
+        env:
+        {{- range .Values.env }}
+        - name: {{ .name }}
+          value: {{ .value | quote }}
+        {{- end }}
+        {{- end }}
+        {{- if .Values.resources }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        {{- end }}
+        {{- if .Values.tls.enabled }}
+        volumeMounts:
+        - name: {{ .Values.tls.name }}
+          mountPath: {{ .Values.tls.mountPath }}
+          readOnly: {{ .Values.tls.readOnly }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- if .Values.tls.enabled }}
+      volumes:
+      - name: {{ .Values.tls.name }}
+        secret:
+          secretName: {{ .Values.tls.secretName }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations:
+{{ toYaml .Values.tolerations | indent 8 }}
+      {{- end }}
+      {{- if .Values.affinity }}
+      affinity:
+{{ toYaml .Values.affinity | indent 8 }}
+      {{- end }}
