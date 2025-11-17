@@ -1,0 +1,8 @@
+[ v3_ext ]
+subjectAltName = @alt_names
+
+[ alt_names ]
+DNS.1 = ns-resource-limiter-ns-resource-limiter
+DNS.2 = ns-resource-limiter-ns-resource-limiter.default
+DNS.3 = ns-resource-limiter-ns-resource-limiter.default.svc
+DNS.4 = ns-resource-limiter-ns-resource-limiter.default.svc.cluster.local
