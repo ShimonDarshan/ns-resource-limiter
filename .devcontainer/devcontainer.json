@@ -1,7 +1,9 @@
 {
     "name": "ns-resource-limiter env",
-    "image" : "mcr.microsoft.com/devcontainers/go",
-    
+
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
     "postCreateCommand": "echo alias k=kubectl >> ~/.bash_aliases",
 
     "customizations": {
