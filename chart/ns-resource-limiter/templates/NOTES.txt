@@ -6,18 +6,38 @@
 
    kubectl get pods -l app=ns-resource-limiter
 
-3. IMPORTANT: To enable the ValidatingWebhook:
-   
-   - Ensure your webhook application serves HTTPS on port 8443 with valid TLS certificates
-   - Ensure the TLS secret 'ns-resource-limiter-tls' exists in the target namespace:
-     kubectl get secret ns-resource-limiter-tls
-   - Then enable the webhook:
-     helm upgrade ns-resource-limiter ./chart/ns-resource-limiter --set admission.enabled=true
+3. IMPORTANT: To enable the ValidatingWebhook with proper TLS:
 
-4. To override image repository/tag:
+   a) Create a self-signed TLS certificate and key:
+      
+      openssl req -x509 -newkey rsa:2048 -keyout tls.key -out tls.crt -days 365 -nodes \
+        -subj "/CN=ns-resource-limiter-ns-resource-limiter.default.svc"
+
+   b) Create the Kubernetes secret:
+      
+      kubectl create secret tls ns-resource-limiter-tls --cert=tls.crt --key=tls.key
+
+   c) Extract the CA certificate in base64:
+      
+      cat tls.crt | base64 -w 0 > ca_bundle.txt
+
+   d) Install/upgrade with caBundle:
+      
+      helm upgrade ns-resource-limiter ./chart/ns-resource-limiter \
+        --set admission.enabled=true \
+        --set tls.caBundle="$(cat ca_bundle.txt)"
+
+4. Verify the webhook is working:
+
+   kubectl get validatingwebhookconfigurations
+   kubectl describe validatingwebhookconfigurations resource-limit-check
+
+5. To override image repository/tag:
 
    helm install ns-resource-limiter ./chart/ns-resource-limiter \
      --set image.repository=yourrepo/ns-resource-limiter \
      --set image.tag=v1.0.0
 
-WARNING: Enabling the webhook without proper TLS setup will cause API server errors.
+WARNING: The webhook requires a valid TLS certificate and caBundle. 
+Without proper TLS setup, the API server will fail to call the webhook.
+Use failurePolicy: Ignore for testing, Fail for production.

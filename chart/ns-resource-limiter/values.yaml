@@ -36,3 +36,4 @@ tls:
   mountPath: /tls
   readOnly: true
   secretName: ns-resource-limiter-tls
+  caBundle: ""

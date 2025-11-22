@@ -10,6 +10,7 @@ webhooks:
         name: {{ include "ns-resource-limiter.fullname" . }}
         namespace: {{ .Release.Namespace }}
         path: /validate
+      caBundle: {{ .Values.tls.caBundle }}
     #! for tests environment only in prod use: Fail
     failurePolicy: Ignore
     rules:
