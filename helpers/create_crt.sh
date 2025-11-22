@@ -27,10 +27,7 @@ openssl x509 -req -in tls.csr -CA ca.crt -CAkey ca.key -CAcreateserial \
 
 kubectl create secret tls ns-resource-limiter-tls \
   --cert=tls.crt --key=tls.key -n $NAMESPACE --dry-run=client -o yaml | kubectl apply -f -
-pwd
-ls
+
 export CA_BUNDLE=$(cat ./ca.crt | base64 -w0)
-echo $CA_BUNDLE
 
-
-yq -i ".tls.caBundle = \"$CA_BUNDLE\"" ../chart/ns-resource-limiter/values.yaml
+yq ".tls.caBundle = \"$CA_BUNDLE\"" ../chart/ns-resource-limiter/values.yaml > ../renderd.values.yaml
