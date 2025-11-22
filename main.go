@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -16,9 +15,14 @@ const (
 )
 
 func main() {
-	fmt.Println("Starting ns-resource-limiter server")
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	log.Println("Starting ns-resource-limiter server")
+
 	http.HandleFunc("/validate", handleValidate)
-	http.ListenAndServeTLS(":8443", certFile, keyFile, nil)
+	err := http.ListenAndServeTLS(":8443", certFile, keyFile, nil)
+	if err != nil {
+		log.Fatalf("Server failed to start: %v", err)
+	}
 }
 
 func handleValidate(w http.ResponseWriter, r *http.Request) {
@@ -26,12 +30,24 @@ func handleValidate(w http.ResponseWriter, r *http.Request) {
 	var admissionReviewReq v1.AdmissionReview
 
 	reqBody, _ := io.ReadAll(r.Body)
-	json.Unmarshal(reqBody, &admissionReviewReq)
+
+	err := json.Unmarshal(reqBody, &admissionReviewReq)
+	if err != nil {
+		log.Printf("[ERROR] Failed to unmarshal admission review: %v", err)
+	}
+
+	log.Println("The all spec:")
+	log.Println(string(reqBody))
+
+	if admissionReviewReq.Request != nil {
+		log.Printf("[REQUEST] Kind: %s/%s, Operation: %s, Name: %s",
+			admissionReviewReq.Request.Kind.Group,
+			admissionReviewReq.Request.Kind.Kind,
+			admissionReviewReq.Request.Operation,
+			admissionReviewReq.Request.Name)
+	}
 
 	handleIncommingRequests(admissionReviewReq)
-
-	myStr := string(reqBody)
-	log.Println(myStr)
 	// response, _ := json.Marshal(reqBody)
 	// response, _ := json.Marshal(admissionReviewReq)
 	w.Write(reqBody)
