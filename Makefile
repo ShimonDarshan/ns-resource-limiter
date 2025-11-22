@@ -36,13 +36,27 @@ cluster.recreate: cluster.destroy cluster.create
 cluster.image.load:
 	minikube image load $(FULL_DOCKER_IMAGE)
 
+.PHONY: cluster.image.delete
+cluster.image.delete:
+	minikube image rm $(FULL_DOCKER_IMAGE)
+
+.PHONY: cluster.image.reload
+cluster.image.reload: helm.uninstall cluster.image.delete cluster.image.load
 
 HELM_RELEASE = "ns-resource-limiter"
 
+# Helm deploy, use it for testing and development only.
 .PHONY: helm.install
 helm.install:
-	helm upgrade --install $(HELM_RELEASE) ./chart/ns-resource-limiter
+	helm upgrade --install \
+		$(HELM_RELEASE) ./chart/ns-resource-limiter \
+		-f renderd.values.yaml
 
 .PHONY: helm.uninstall
 helm.uninstall:
 	helm uninstall $(HELM_RELEASE)
+
+# Development helpers.
+.PHONY: dev.cert.generate
+dev.cert.generate:
+	bash ./helpers/create_crt.sh
